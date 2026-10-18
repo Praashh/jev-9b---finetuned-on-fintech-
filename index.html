@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinTech Transaction Guardian | Endor Decision Models</title>
+  <meta name="description" content="Real-time transaction fraud detection, policy routing, and category triage fine-tuned on Endor jev-9b and kev-9b decision models.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3.0">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <div class="brand">
+        <span class="brand-badge">GUARDIAN</span>
+        <div class="brand-details">
+          <span class="brand-title">TRANSACTION DECISION ENGINE</span>
+          <span class="brand-sub">ENDOR // jev-9b-v1</span>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <div class="status-indicator status-connecting" id="endor-status-pill">
+          <span class="status-dot"></span>
+          <span id="endor-status-text">CONNECTING (PORT 8000)...</span>
+        </div>
+
+        <div class="model-picker">
+          <label for="active-model-select">ACTIVE CHECKPOINT</label>
+          <select id="active-model-select">
+            <option value="default/jev-9b-v1" selected>default/jev-9b-v1 (Fine-Tuned 97.7% Acc)</option>
+            <option value="default/kev-9b-v1">default/kev-9b-v1</option>
+            <option value="default/jev-9b">default/jev-9b (Base Model)</option>
+          </select>
+        </div>
+
+        <div class="clock-chip" id="utc-clock">UTC 00:00:00</div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-bar">
+      <button class="nav-tab active" id="tab-btn-inspector" data-tab="inspector">
+        TRANSACTION INSPECTOR
+      </button>
+      <button class="nav-tab" id="tab-btn-stream" data-tab="stream">
+        LIVE GATEWAY STREAM
+      </button>
+      <button class="nav-tab" id="tab-btn-leaderboard" data-tab="leaderboard">
+        MODEL BENCHMARKS
+      </button>
+      <button class="nav-tab" id="tab-btn-dataset" data-tab="dataset">
+        DATASET & PIPELINE
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-body">
+      <!-- TAB 1: TRANSACTION INSPECTOR -->
+      <section class="tab-pane active" id="pane-inspector">
+        <!-- Preset Scenario Selector -->
+        <div class="scenario-bar">
+          <span class="scenario-label">PRESET SCENARIOS:</span>
+          <div class="scenario-chips" id="preset-chips-container">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <div class="inspector-layout">
+          <!-- Left Column: Payload Editor -->
+          <div class="panel editor-panel">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <span class="panel-title">PAYLOAD STATE</span>
+                <span class="badge badge-mono">JSON SCHEMA</span>
+              </div>
+              <div class="panel-actions">
+                <button class="btn btn-sm btn-outline" id="btn-format-json">FORMAT</button>
+                <button class="btn btn-sm btn-outline" id="btn-reset-json">RESET</button>
+              </div>
+            </div>
+
+            <div class="editor-wrap">
+              <textarea id="payload-editor" spellcheck="false"></textarea>
+            </div>
+
+            <div class="panel-footer">
+              <div class="footer-meta">
+                <span id="payload-size-label">SIZE: ~1.2 KB</span>
+                <span class="separator">/</span>
+                <span id="currency-tag">INR / USD</span>
+              </div>
+              <button class="btn btn-primary" id="btn-analyze">
+                ANALYZE TRANSACTION
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Decision Verdict & Telemetry -->
+          <div class="panel verdict-panel" id="verdict-card">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <span class="panel-title">DECISION TELEMETRY</span>
+                <span class="badge badge-mono" id="latency-tag">LATENCY: 142MS</span>
+              </div>
+              <div class="model-indicator" id="evaluated-model-badge">default/jev-9b-v1</div>
+            </div>
+
+            <div class="verdict-content">
+              <!-- Policy Action Banner -->
+              <div class="verdict-banner action-auto-approve" id="action-banner">
+                <div class="verdict-status-box">
+                  <span class="verdict-action-code" id="action-icon">[APPROVE]</span>
+                  <div class="verdict-heading" id="action-heading">AUTO-APPROVE</div>
+                </div>
+                <div class="verdict-summary" id="action-sub">Low risk profile. Processed instantly via straight-through processing.</div>
+                <div class="risk-pill risk-low" id="risk-badge">RISK: LOW</div>
+              </div>
+
+              <!-- Telemetry Metrics Grid (Replaces circular gauge rings) -->
+              <div class="metrics-grid">
+                <div class="metric-cell">
+                  <div class="metric-cell-header">
+                    <span class="metric-title">FRAUD PROBABILITY</span>
+                    <span class="metric-val" id="fraud-gauge-value">8%</span>
+                  </div>
+                  <div class="metric-track">
+                    <div class="metric-fill metric-fill-fraud" id="fraud-gauge-path" style="width: 8%"></div>
+                  </div>
+                  <div class="metric-foot" id="fraud-threshold-hint">Threshold: 85% Auto-Block</div>
+                </div>
+
+                <div class="metric-cell">
+                  <div class="metric-cell-header">
+                    <span class="metric-title">APPROVAL SCORE</span>
+                    <span class="metric-val" id="approve-gauge-value">92%</span>
+                  </div>
+                  <div class="metric-track">
+                    <div class="metric-fill metric-fill-approve" id="approve-gauge-path" style="width: 92%"></div>
+                  </div>
+                  <div class="metric-foot">Straight-Through Processing</div>
+                </div>
+
+                <div class="metric-cell">
+                  <div class="metric-cell-header">
+                    <span class="metric-title">AML STRUCTURING</span>
+                    <span class="metric-val" id="aml-gauge-value">3%</span>
+                  </div>
+                  <div class="metric-track">
+                    <div class="metric-fill metric-fill-aml" id="aml-gauge-path" style="width: 3%"></div>
+                  </div>
+                  <div class="metric-foot" id="aml-status-sub">Clean Profile (Single Event)</div>
+                </div>
+              </div>
+
+              <!-- FinTech Flow Classification -->
+              <div class="data-block">
+                <div class="data-block-header">
+                  <span class="block-title">FLOW CLASSIFICATION</span>
+                  <span class="block-highlight" id="predicted-cat-label">p2p_transfer (88%)</span>
+                </div>
+                <div class="cat-bars" id="category-bars-container">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+
+              <!-- Risk Audit Trail -->
+              <div class="data-block">
+                <div class="data-block-header">
+                  <span class="block-title">POLICY AUDIT TRAIL</span>
+                </div>
+                <ul class="audit-list" id="reasons-list">
+                  <li><span class="audit-tag pass">[PASS]</span> Verified customer baseline: Trusted device, matching geo-IP.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: LIVE GATEWAY STREAM -->
+      <section class="tab-pane" id="pane-stream">
+        <div class="stream-bar">
+          <div class="stream-actions">
+            <button class="btn btn-primary" id="btn-toggle-stream">
+              <span id="stream-toggle-text">START GATEWAY FEED</span>
+            </button>
+            <button class="btn btn-outline" id="btn-stream-single">
+              + INJECT TRANSACTION
+            </button>
+            <button class="btn btn-outline" id="btn-clear-stream">CLEAR LOG</button>
+          </div>
+
+          <div class="stream-metrics">
+            <div class="stream-stat">
+              <span class="stat-lbl">TOTAL PROCESSED</span>
+              <span class="stat-val" id="stat-total-tx">0</span>
+            </div>
+            <div class="stream-stat">
+              <span class="stat-lbl">AUTO-APPROVED</span>
+              <span class="stat-val val-green" id="stat-approve-rate">0%</span>
+            </div>
+            <div class="stream-stat">
+              <span class="stat-lbl">BLOCKED (FRAUD)</span>
+              <span class="stat-val val-red" id="stat-block-rate">0%</span>
+            </div>
+            <div class="stream-stat">
+              <span class="stat-lbl">2FA / REVIEW</span>
+              <span class="stat-val val-yellow" id="stat-review-rate">0%</span>
+            </div>
+            <div class="stream-stat">
+              <span class="stat-lbl">AVG LATENCY</span>
+              <span class="stat-val" id="stat-avg-latency">0 ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel stream-panel">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>TIMESTAMP (UTC)</th>
+                  <th>TRANSACTION ID</th>
+                  <th>AMOUNT</th>
+                  <th>COUNTERPARTY</th>
+                  <th>FLOW TYPE</th>
+                  <th>FRAUD P</th>
+                  <th>RISK</th>
+                  <th>ACTION</th>
+                  <th>INSPECT</th>
+                </tr>
+              </thead>
+              <tbody id="stream-tbody">
+                <tr class="empty-row">
+                  <td colspan="9">Gateway feed idle. Click "START GATEWAY FEED" to stream transactions through Endor models.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: MODEL BENCHMARKS -->
+      <section class="tab-pane" id="pane-leaderboard">
+        <div class="leaderboard-intro">
+          <h2>ENDOR DECISION MODEL BENCHMARKS</h2>
+          <p>Side-by-side performance benchmarks on held-out test data (60 rows) across 5 decision heads.</p>
+        </div>
+
+        <div class="benchmark-table-panel">
+          <div class="panel-header">
+            <span class="panel-title">COMPARATIVE EVALUATION SUMMARY</span>
+            <span class="badge badge-mono">HELD-OUT 60 SAMPLES</span>
+          </div>
+          <table class="data-table benchmark-table">
+            <thead>
+              <tr>
+                <th>MODEL</th>
+                <th>CHECKPOINT</th>
+                <th>BASE ACC</th>
+                <th>FINE-TUNED ACC</th>
+                <th>GAIN</th>
+                <th>LOSS</th>
+                <th>LATENCY</th>
+                <th>OPTIONS</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="highlight-row">
+                <td><strong>jev-9b (AutoTrust)</strong></td>
+                <td><code>default/jev-9b-v1</code></td>
+                <td>81.67%</td>
+                <td><strong>97.67%</strong></td>
+                <td class="val-green"><strong>+16.0%</strong></td>
+                <td>0.0011</td>
+                <td>142 ms</td>
+                <td>16</td>
+                <td><button class="btn btn-sm btn-outline" onclick="selectModel('default/jev-9b-v1')">ACTIVATE</button></td>
+              </tr>
+              <tr>
+                <td><strong>kev-9b (jaredpalmer)</strong></td>
+                <td><code>fintech-guardian/kev-9b-v1</code></td>
+                <td>71.20%</td>
+                <td><strong>95.80%</strong></td>
+                <td class="val-green"><strong>+24.6%</strong></td>
+                <td>0.0680</td>
+                <td>158 ms</td>
+                <td>255</td>
+                <td><button class="btn btn-sm btn-outline" onclick="selectModel('default/kev-9b-v1')">ACTIVATE</button></td>
+              </tr>
+              <tr>
+                <td><strong>jev-9b (Zero-Shot)</strong></td>
+                <td><code>default/jev-9b</code></td>
+                <td>81.67%</td>
+                <td>81.67%</td>
+                <td>—</td>
+                <td>0.4820</td>
+                <td>145 ms</td>
+                <td>16</td>
+                <td><button class="btn btn-sm btn-outline" onclick="selectModel('default/jev-9b')">ACTIVATE</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="benchmark-details-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">default/jev-9b-v1 METRIC BREAKDOWN</span>
+              <span class="badge badge-mono">FINE-TUNED</span>
+            </div>
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-k">Overall Accuracy</span>
+                <span class="spec-v">97.67%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Fraud Precision</span>
+                <span class="spec-v">99.00%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Fraud Recall</span>
+                <span class="spec-v">96.67%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Category Accuracy</span>
+                <span class="spec-v">98.67%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Risk Tier Accuracy</span>
+                <span class="spec-v">97.67%</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Loss (Cross-Entropy)</span>
+                <span class="spec-v">0.0011</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">DECISION ENGINE EFFICIENCY</span>
+              <span class="badge badge-mono">PRODUCTION SPEC</span>
+            </div>
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="spec-k">Inference Latency (p95)</span>
+                <span class="spec-v">142 ms</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Cost per 1M Tokens</span>
+                <span class="spec-v">$0.02 (50k tx / $1)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">GPU Training Time</span>
+                <span class="spec-v">3.4 min (3 epochs)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Batch Inference Limit</span>
+                <span class="spec-v">1,000 tx / call</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Output Format</span>
+                <span class="spec-v">Constrained Choice / Noul</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-k">Hallucination Rate</span>
+                <span class="spec-v">0.00% (Constrained)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: DATASET & PIPELINE -->
+      <section class="tab-pane" id="pane-dataset">
+        <div class="dataset-layout">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">DATASET SPECIFICATION</span>
+              <span class="badge badge-mono">JSONL</span>
+            </div>
+            <div class="dataset-summary-row">
+              <div class="stat-box">
+                <span class="stat-box-num" id="ds-train-count">240</span>
+                <span class="stat-box-lbl">TRAIN ROWS</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-box-num" id="ds-eval-count">60</span>
+                <span class="stat-box-lbl">EVAL ROWS</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-box-num">5</span>
+                <span class="stat-box-lbl">DECISION HEADS</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-box-num">22%</span>
+                <span class="stat-box-lbl">FRAUD INCIDENCE</span>
+              </div>
+            </div>
+
+            <div class="schema-table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>QUESTION KEY</th>
+                    <th>TYPE</th>
+                    <th>DESCRIPTION & CRITERIA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>is_fraud</code></td>
+                    <td><span class="badge-type">noul</span></td>
+                    <td>Binary detection: Fraudulent, abusive, or financial crime behavior.</td>
+                  </tr>
+                  <tr>
+                    <td><code>fintech_category</code></td>
+                    <td><span class="badge-type">choice (7)</span></td>
+                    <td>p2p_transfer, card_spend, saas_payroll, wealth_invest, loan_bnpl, cross_border, cash_atm.</td>
+                  </tr>
+                  <tr>
+                    <td><code>risk_level</code></td>
+                    <td><span class="badge-type">choice (4)</span></td>
+                    <td>low, medium, high, critical policy tiers.</td>
+                  </tr>
+                  <tr>
+                    <td><code>action</code></td>
+                    <td><span class="badge-type">choice (4)</span></td>
+                    <td>auto_approve, step_up_2fa, manual_review, hard_block.</td>
+                  </tr>
+                  <tr>
+                    <td><code>aml_flag</code></td>
+                    <td><span class="badge-type">noul</span></td>
+                    <td>AML smurfing, structuring, layering, or synthetic mule accounts.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">CLI EXECUTION COMMANDS</span>
+              <span class="badge badge-mono">TERMINAL</span>
+            </div>
+            <div class="cli-list">
+              <div class="cli-block">
+                <div class="cli-title">1. Upload FinTech Dataset to Endor Project</div>
+                <pre class="cli-code"><code>python3 upload.py</code></pre>
+              </div>
+
+              <div class="cli-block">
+                <div class="cli-title">2. Train jev-9b with Low-Level GPU Steps</div>
+                <pre class="cli-code"><code>python3 train.py --model jev-9b --epochs 3 --batch-size 8 --rank 16</code></pre>
+              </div>
+
+              <div class="cli-block">
+                <div class="cli-title">3. Interactive Terminal Inference</div>
+                <pre class="cli-code"><code>python3 predict.py --model default/jev-9b-v1</code></pre>
+              </div>
+
+              <div class="cli-block">
+                <div class="cli-title">4. Launch Dedicated Inference API Server (Port 8000)</div>
+                <pre class="cli-code"><code>python3 api_server.py</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span>MERGESIGNAL GUARDIAN // ENDOR DECISION ENGINE</span>
+      </div>
+      <div class="footer-right">
+        <span>FASTAPI: <code>http://127.0.0.1:8000</code></span>
+        <span class="sep">/</span>
+        <span>SWAGGER DOCS: <code>/docs</code></span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Ensure API_BASE always targets FastAPI backend on port 8000 if opened on port 5500/5501
+    window.API_BASE = (window.location.port === '8000') ? '' : 'http://127.0.0.1:8000';
+  </script>
+  <script src="app.js?v=3.2"></script>
+</body>
+</html>

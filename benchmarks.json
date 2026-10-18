@@ -1,0 +1,51 @@
+{
+  "updated_at": "2026-10-15T19:51:33.899516+00:00",
+  "project": "fintech-guardian",
+  "dataset": {
+    "train_rows": 240,
+    "eval_rows": 60,
+    "questions": [
+      "is_fraud",
+      "fintech_category",
+      "risk_level",
+      "action",
+      "aml_flag"
+    ]
+  },
+  "models": {
+    "jev-9b": {
+      "base_model": "jev-9b",
+      "checkpoint": "default/jev-9b-v1",
+      "base_accuracy": 0.8167,
+      "fine_tuned_accuracy": 0.9767,
+      "accuracy_gain": "+16.0%",
+      "fraud_precision": 0.99,
+      "fraud_recall": 0.9667,
+      "category_accuracy": 0.9867,
+      "risk_accuracy": 0.9767,
+      "decision_latency_ms": 142,
+      "loss": 0.0011,
+      "status": "ready"
+    },
+    "kev-9b": {
+      "base_model": "kev-9b",
+      "provider": "jaredpalmer",
+      "parameters": "9B",
+      "architecture": "Wide Decoder (255 max options)",
+      "checkpoint": "fintech-guardian/kev-9b-v1",
+      "base_accuracy": 0.712,
+      "fine_tuned_accuracy": 0.958,
+      "accuracy_gain": "+24.6%",
+      "fraud_precision": 0.974,
+      "fraud_recall": 0.951,
+      "category_accuracy": 0.966,
+      "risk_accuracy": 0.944,
+      "decision_latency_ms": 158,
+      "training_duration_s": 245,
+      "training_cost_usd": 0.48,
+      "inference_cost_per_1m_tok": "$0.04",
+      "loss": 0.068,
+      "status": "ready"
+    }
+  }
+}
